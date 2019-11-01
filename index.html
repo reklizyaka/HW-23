@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	
+</head>
+<body>
+	<div class="wrapper">
+		<div>
+			<select id="heroes"></select>
+		</div>
+
+		<div class="films">
+		</div>
+	</div>
+
+
+	<script>
+		const heroesUrl = 'https://swapi.co/api/people/';
+		const foo = async (url) => {
+			try{
+				const heroFetch = await fetch(url);
+				const heroList = await heroFetch.json() 
+				.then(resolve => {
+					const select = document.querySelector('#heroes');
+					let i = 0;
+					resolve.results.forEach(item => {
+						const option = document.createElement('option')
+						option.innerHTML = item.name;
+						select.appendChild(option);
+					})
+				})
+				return heroList;
+			}catch(err) {
+				return alert('Eblan')
+			}
+			
+		}
+		foo(heroesUrl);
+
+		const f = async (heroList) =>{
+			const hero = document.querySelector('#heroes').value
+			const filmsWrapper = document.querySelector('.films');
+			const $list = document.querySelector('.list');
+			if($list) {
+				$list.remove();
+			}	
+			const $filmsList = document.createElement('ol');
+			$filmsList.classList.add('list')
+			try {
+				const heroFetch = await fetch(heroList);
+				const allFilms = await heroFetch.json().then(resolve => {
+					resolve.results.forEach(item => {
+						if(item.name === hero) {
+							item.films.forEach(item => {
+								fetch(item)
+								.then(res => res.json())
+								.then(res => {
+									const $li = document.createElement('li');
+									$li.innerText = res.title
+									$filmsList.append($li)
+									filmsWrapper.append($filmsList)
+								})
+							})
+						}
+					})
+				})
+			}catch {
+				res.append('Eblan')
+			}
+		}
+
+		const select = document.querySelector('#heroes');
+		select.addEventListener('change',() => {
+			f(heroesUrl)
+
+		})
+		
+	</script>
+
+</body>
+</html>
