@@ -1,83 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-	
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Document</title>
 </head>
 <body>
-	<div class="wrapper">
-		<div>
-			<select id="heroes"></select>
-		</div>
+  <div class="wrapper">
+    <div>
+      <h1>Choose the Hero</h1>
+      <select class="heroes-list"></select>
+    </div>
+    <div class="films">
+      <h2>Films in which he been: </h2>
+    </div>
+  </div>
+  <script>
+    const heroesUrl = "https://swapi.co/api/people/";
+    const resultsList = [];
+    const foo = async heroesUrl => {
+      try {
+        const response = await fetch(heroesUrl);
+        const data = await response.json().then(resolve => {
+          const select = document.querySelector(".heroes-list");
+          resolve.results.forEach(async item => {
+            const resolveFilm = [];
+            await item.films.forEach(async item => {
+              const responseFilm = await fetch(item);
+              const filmName = await responseFilm.json();
+              resolveFilm.push(filmName.title);
+            });
+            item.films = resolveFilm;
+            resultsList.push(item);
+            const option = document.createElement("option");
+            option.innerHTML = item.name;
+            select.appendChild(option);
+          });
+          if (resolve.next !== null) {
+            heroesUrl = resolve.next;
+            foo(heroesUrl);
+          }
+          return resultsList;
+        });
+        return resultsList;
+      } catch (err) {
+        return alert(err);
+      }
+    };
+    foo(heroesUrl);
 
-		<div class="films">
-		</div>
-	</div>
-
-
-	<script>
-		const heroesUrl = 'https://swapi.co/api/people/';
-		const foo = async (url) => {
-			try{
-				const heroFetch = await fetch(url);
-				const heroList = await heroFetch.json() 
-				.then(resolve => {
-					const select = document.querySelector('#heroes');
-					let i = 0;
-					resolve.results.forEach(item => {
-						const option = document.createElement('option')
-						option.innerHTML = item.name;
-						select.appendChild(option);
-					})
-				})
-				return heroList;
-			}catch(err) {
-				return alert('Eblan')
-			}
-			
-		}
-		foo(heroesUrl);
-
-		const f = async (heroList) =>{
-			const hero = document.querySelector('#heroes').value
-			const filmsWrapper = document.querySelector('.films');
-			const $list = document.querySelector('.list');
-			if($list) {
-				$list.remove();
-			}	
-			const $filmsList = document.createElement('ol');
-			$filmsList.classList.add('list')
-			try {
-				const heroFetch = await fetch(heroList);
-				const allFilms = await heroFetch.json().then(resolve => {
-					resolve.results.forEach(item => {
-						if(item.name === hero) {
-							item.films.forEach(item => {
-								fetch(item)
-								.then(res => res.json())
-								.then(res => {
-									const $li = document.createElement('li');
-									$li.innerText = res.title
-									$filmsList.append($li)
-									filmsWrapper.append($filmsList)
-								})
-							})
-						}
-					})
-				})
-			}catch {
-				res.append('Eblan')
-			}
-		}
-
-		const select = document.querySelector('#heroes');
-		select.addEventListener('change',() => {
-			f(heroesUrl)
-
-		})
-		
-	</script>
-
+    const f = heroList => {
+      const hero = document.querySelector(".heroes-list").value;
+      const filmList = document.querySelector(".films");
+      const $list = document.querySelector(".list");
+      if ($list) {
+        $list.remove();
+      }
+      const $filmsList = document.createElement("ol");
+      $filmsList.classList.add("list");
+      try {
+        const heroFetch = resultsList.find(x => x.name === hero);
+        heroFetch.films.forEach(item => {
+          const $li = document.createElement("li");
+          $li.innerText = item;
+          $filmsList.append($li);
+          filmList.append($filmsList);
+        });
+      } catch (err) {
+        return alert(err);
+      }
+    };
+    const select = document.querySelector(".heroes-list");
+    select.addEventListener("change", () => {
+      f(heroesUrl);
+    });
+  </script>
 </body>
 </html>
